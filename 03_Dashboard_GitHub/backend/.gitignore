@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+garden_data/
+eco_sheets_config.json
+service_account.json
+*.pem

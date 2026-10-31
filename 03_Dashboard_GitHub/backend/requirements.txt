@@ -1,0 +1,6 @@
+fastapi>=0.110,<1
+uvicorn>=0.30,<1
+pydantic>=2,<3
+# Optional Google Sheets sync dependencies (installed by default for simpler setup)
+google-auth>=2,<3
+requests>=2.31,<3

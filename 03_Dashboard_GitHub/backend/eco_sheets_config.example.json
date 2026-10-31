@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "spreadsheet_id": "DAN_ID_GOOGLE_SHEETS_VAO_DAY",
+  "service_account_file": "service_account.json",
+  "events_tab": "NhatKyHoatDong",
+  "sensors_tab": "LichSuCamBien"
+}
