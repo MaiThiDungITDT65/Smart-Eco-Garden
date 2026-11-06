@@ -47,8 +47,8 @@ const String KEYPAD_PASSWORD = "1234";
 // =============== SERVO CUA ===============
 Servo doorServo;
 const int SERVO_PIN = 23;
-const int CLOSE_ANGLE = 70;
-const int OPEN_ANGLE = 110;
+const int CLOSE_ANGLE = 0;
+const int OPEN_ANGLE = 90;
 const unsigned long AUTO_CLOSE_MS = 5000UL;
 bool doorOpen = false;
 unsigned long doorOpenTime = 0;
@@ -84,14 +84,17 @@ String relayState = "--";  // Bom 1
 String waterMode = "--";   // 1 = AUTO; 0 = MANUAL
 
 // Extended roof and pump telemetry (requires updated UNO firmware).
+// UNO roof angles: 180=RETRACTED (THU MAI), 90=COVERED (CHE MAI).
+const int ROOF_RETRACT_ANGLE = 180;
+const int ROOF_COVER_ANGLE = 90;
 int roofAngle = -1;       // Last angle COMMANDED to SG90 (no physical feedback)
 int roofTarget = -1;
 bool roofCoverRequested = false;
 bool roofDataValid = false;
 bool floodPump2 = false;
 bool floodAlarmUNO = false;
-bool roofAutoMode = true;
-bool floodAutoMode = true;
+bool roofAutoMode = false; // gia tri ban dau; UNO gui trang thai thuc te
+bool floodAutoMode = false; // gia tri ban dau; UNO gui trang thai thuc te
 bool modesDataValid = false;
 
 // =============== CAM BIEN MUC NUOC ===============
@@ -432,7 +435,7 @@ void processUnoLine(String line) {
       logEvent(rain.toInt()<900 ? "RAIN_ON" : "RAIN_OFF", "Mua RAW="+rain, "UNO");
     if (roofDataValid && oldRoofValid) {
       if (oldRoofTarget != roofTarget)
-        logEvent(roofTarget == 180 ? "ROOF_COVER" : "ROOF_RETRACT", "Goc dich "+String(roofTarget), "UNO");
+        logEvent(roofTarget == ROOF_COVER_ANGLE ? "ROOF_COVER" : "ROOF_RETRACT", "Goc dich "+String(roofTarget), "UNO");
       if (oldRoofAngle != oldRoofTarget && roofAngle == roofTarget)
         logEvent("ROOF_REACHED", "Goc lenh "+String(roofAngle), "UNO");
       if (oldRoofMode != roofAutoMode)
@@ -555,8 +558,9 @@ void handleData() {
   json += ",\"roofState\":\"";
   if (!roofLive) json += "UNKNOWN";
   else if (roofAngle != roofTarget) json += "MOVING";
-  else if (roofTarget == 180) json += "COVERED";
-  else json += "RETRACTED";
+  else if (roofTarget == ROOF_COVER_ANGLE) json += "COVERED";
+  else if (roofTarget == ROOF_RETRACT_ANGLE) json += "RETRACTED";
+  else json += "UNKNOWN";
   json += "\"";
   json += ",\"floodPump\":";
   json += (roofLive && floodPump2 ? "true" : "false");

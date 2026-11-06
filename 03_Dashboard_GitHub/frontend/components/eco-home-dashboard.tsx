@@ -181,7 +181,7 @@ export default function EcoHomeDashboard() {
         "water/auto": "Chuyển tưới tự động", "water/manual": "Chuyển tưới thủ công",
         "water/on": "Bật tưới", "water/off": "Tắt tưới",
         "roof/auto": "Mái che tự động", "roof/manual": "Mái che thủ công",
-        "roof/open": "Mở mái", "roof/close": "Đóng mái",
+        "roof/open": "Che mái", "roof/close": "Thu mái",
         "flood/auto": "Chống ngập tự động", "flood/manual": "Chống ngập thủ công",
         "flood/on": "Bật bơm chống ngập", "flood/off": "Tắt bơm chống ngập",
       };
@@ -244,7 +244,7 @@ export default function EcoHomeDashboard() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* GARDEN_ROOF_PANEL_V3: Do not assume commanded servo angles are measured angles. */}
-        <Panel title="Mái che nhà kính" icon={CloudRain} note="Điều khiển tự động hoặc thủ công">
+        <Panel title="Mái che nhà kính" icon={CloudRain} note="Góc thu mái 180°, che mái 90°; mặc định thủ công">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-xl bg-stone-50 p-3">
               <p className="text-xs text-stone-500">Điều kiện thời tiết</p>
@@ -262,14 +262,14 @@ export default function EcoHomeDashboard() {
               <span className="text-stone-600">Góc lệnh hiện tại <strong className="text-stone-900">{data?.roofAngleReported ? fmt(data.roofAngle) + "°" : "--"}</strong></span>
               <span className="text-stone-600">Góc đích <strong className="text-stone-900">{data?.roofAngleReported ? fmt(data.roofTargetAngle) + "°" : "--"}</strong></span>
             </div>
-            <div className="mt-3 h-3 overflow-hidden rounded-full bg-stone-100"><div className="h-full rounded-full bg-emerald-600 transition-[width] duration-300" style={{ width: `${data?.roofAngleReported && data.roofAngle != null ? Math.min(100,Math.max(0,data.roofAngle/180*100)) : 0}%` }} /></div>
+            <div className="mt-3 h-3 overflow-hidden rounded-full bg-stone-100"><div className="h-full rounded-full bg-emerald-600 transition-[width] duration-300" style={{ width: `${data?.roofAngleReported && data.roofAngle != null ? Math.min(100,Math.max(0,(180-data.roofAngle)/90*100)) : 0}%` }} /></div>
           </div>
           <div className="mt-4 flex items-center justify-between gap-2 text-sm"><span>Chế độ mái che</span><strong>{data?.roofMode || "--"}</strong></div>
           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <ActionButton label="AUTO" onClick={() => void command("roof/auto")} disabled={!canControl || !data?.manualModesReported} busy={busy === "roof/auto"} kind={data?.roofMode === "AUTO" ? "primary" : "plain"}/>
             <ActionButton label="MANUAL" onClick={() => void command("roof/manual")} disabled={!canControl || !data?.manualModesReported} busy={busy === "roof/manual"} kind={data?.roofMode === "MANUAL" ? "primary" : "plain"}/>
-            <ActionButton label="Mở mái" onClick={() => void command("roof/open")} disabled={!canControl || data?.roofMode !== "MANUAL"} busy={busy === "roof/open"}/>
-            <ActionButton label="Đóng mái" onClick={() => void command("roof/close")} disabled={!canControl || data?.roofMode !== "MANUAL"} busy={busy === "roof/close"} kind="plain"/>
+            <ActionButton label="Che mái" onClick={() => void command("roof/open")} disabled={!canControl || data?.roofMode !== "MANUAL"} busy={busy === "roof/open"}/>
+            <ActionButton label="Thu mái" onClick={() => void command("roof/close")} disabled={!canControl || data?.roofMode !== "MANUAL"} busy={busy === "roof/close"} kind="plain"/>
           </div>
           <p className="mt-3 text-xs leading-5 text-stone-500">Ở chế độ tự động, mái che dựa vào cảm biến mưa. Chuyển sang thủ công để mở hoặc đóng mái. Góc hiển thị là góc lệnh, không phải số đo vị trí cơ khí.</p>
         </Panel>
@@ -279,7 +279,7 @@ export default function EcoHomeDashboard() {
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4"><ActionButton label="AUTO" onClick={() => void command("water/auto")} disabled={!canControl} busy={busy === "water/auto"} kind={data?.waterMode === "AUTO" ? "primary" : "plain"} /><ActionButton label="MANUAL" onClick={() => void command("water/manual")} disabled={!canControl} busy={busy === "water/manual"} kind={data?.waterMode === "MANUAL" ? "primary" : "plain"} /><ActionButton label="Bật tưới" onClick={() => void command("water/on")} disabled={!canControl || data?.waterMode !== "MANUAL"} busy={busy === "water/on"} /><ActionButton label="Tắt tưới" onClick={() => void command("water/off")} disabled={!canControl} busy={busy === "water/off"} kind="danger" /></div>
           <p className="mt-3 text-[11px] leading-5 text-stone-500">Tưới tự động khi đất khô và trời không mưa. Mỗi lần tưới tối đa 5 giây.</p>
         </Panel>
-        <Panel title="Cửa thông minh" note="Mở bằng bàn phím hoặc Dashboard; tự đóng sau 5 giây" icon={DoorOpen}>
+        <Panel title="Cửa thông minh" note="Servo cửa: 0° đóng, 90° mở; tự đóng sau 5 giây" icon={DoorOpen}>
           <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-xs text-stone-500">Trạng thái cửa</p><p className="mt-1 text-lg font-bold">{data ? data.doorOpen ? "ĐANG MỞ" : "ĐÃ ĐÓNG" : "--"}</p></div><StatusPill color={data?.doorOpen ? "yellow" : "green"}>{data ? data.doorOpen ? "Cửa đang mở" : "Cửa an toàn" : "Chưa có dữ liệu"}</StatusPill></div>
           <div className="mt-5 grid grid-cols-2 gap-2"><ActionButton label="Mở cửa" onClick={() => void command("door/open")} disabled={!canControl} busy={busy === "door/open"} /><ActionButton label="Đóng cửa" onClick={() => void command("door/close")} disabled={!canControl} busy={busy === "door/close"} kind="plain" /></div>
           <p className="mt-3 text-[11px] text-stone-500">Trạng thái hiển thị theo dữ liệu thiết bị báo về.</p>

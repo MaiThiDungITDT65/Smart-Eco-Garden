@@ -43,7 +43,7 @@ const unsigned long MAX_FLOOD_MS = 30000UL;
 const unsigned long FLOOD_STABLE_MS = 3000UL;
 const unsigned long FLOOD_LINK_TIMEOUT_MS = 4000UL;
 
-const int ROOF_RETRACT = 0, ROOF_COVER = 180;
+const int ROOF_RETRACT = 180, ROOF_COVER = 90;
 const unsigned long RAIN_CONFIRM_MS = 2000UL;
 const unsigned long DRY_CONFIRM_MS = 10000UL;
 const unsigned long ROOF_STEP_MS = 20UL;
@@ -51,8 +51,8 @@ int roofAngle = ROOF_RETRACT;
 int roofTarget = ROOF_RETRACT;
 bool roofCoverRequested = false;
 // true = auto from rain sensor, false = manual from Dashboard
-bool roofAutoMode = true;
-bool floodAutoMode = true;
+bool roofAutoMode = false; // MAC DINH MANUAL
+bool floodAutoMode = false; // MAC DINH MANUAL
 bool floodManualReady = true; // Manual pump: OFF must precede another ON
 bool rainSampleWet = false;
 unsigned long rainStateSince = 0, lastRoofStep = 0;
@@ -60,7 +60,7 @@ unsigned long rainStateSince = 0, lastRoofStep = 0;
 float temperature = NAN, humidity = NAN;
 int soil = 0, lightValue = 0, rainValue = 0, vibration = 0;
 bool vibrationDetected = false;
-bool autoMode = true, autoArmed = false, watering = false;
+bool autoMode = false, autoArmed = false, watering = false; // TUOI MAC DINH MANUAL
 unsigned long waterStart = 0;
 
 int floodRaw = 0;
@@ -139,13 +139,13 @@ void controlRoofWeather() {
       nowMs - rainStateSince >= RAIN_CONFIRM_MS) {
     roofCoverRequested = true;
     roofTarget = ROOF_COVER;
-    Serial.println(F("[MAI] MUA -> CHE 180"));
+    Serial.println(F("[MAI] MUA -> CHE 90"));
   }
   if (!wet && roofCoverRequested &&
       nowMs - rainStateSince >= DRY_CONFIRM_MS) {
     roofCoverRequested = false;
     roofTarget = ROOF_RETRACT;
-    Serial.println(F("[MAI] KHO -> THU 0"));
+    Serial.println(F("[MAI] KHO -> THU 180"));
   }
 }
 
@@ -251,7 +251,9 @@ void controlFloodSafety() {
   unsigned long nowMs = millis();
   if (!floodHasData || nowMs - lastFloodPacket > FLOOD_LINK_TIMEOUT_MS) {
     if (floodPumping) stopFloodPump();
-    floodManualReady = false;
+    // Chua tung nhan packet: giu trang thai cho phep thu cong ban dau.
+    // Da tung nhan roi bi mat ket noi: khoa bom den khi co lenh OFF.
+    if (floodHasData) floodManualReady = false;
     floodHighCandidate = false;
     floodLowCandidate = false;
     updateLEDs();
@@ -446,8 +448,8 @@ void setup() {
   roofAngle = ROOF_RETRACT;
   roofTarget = ROOF_RETRACT;
   roofCoverRequested = false;
-  roofAutoMode = true;
-  floodAutoMode = true;
+  roofAutoMode = false;
+  floodAutoMode = false;
   floodManualReady = true;
   roofServo.attach(ROOF_SERVO_PIN);
   roofServo.write(roofAngle);
@@ -456,7 +458,7 @@ void setup() {
 
   stopWatering();
   stopFloodPump();
-  autoMode = true;
+  autoMode = false;
   autoArmed = false;
   floodHasData = false;
   floodArmed = true;
@@ -468,7 +470,8 @@ void setup() {
 
   Serial.println(F("SMART ECO GARDEN - UNO R3"));
   Serial.println(F("UART 9600 / ROOF D4 / PUMP D3,D5"));
-  Serial.println(F("RAIN A2 / ROOF 0-180 / LED D6,D8,D9"));
+  Serial.println(F("TUOI / MAI / NGAP: MANUAL MAC DINH"));
+  Serial.println(F("RAIN A2 / ROOF THU 180 CHE 90"));
 }
 
 void loop() {

@@ -80,7 +80,7 @@ EVENT_LABELS = {
     "ACCESS_DENIED": "Nhập sai mật khẩu Keypad", "WATER_CMD": "Đã gửi lệnh tưới cây",
     "PUMP1_ON": "Bơm tưới bật", "PUMP1_OFF": "Bơm tưới tắt",
     "PUMP2_ON": "Bơm chống ngập bật", "PUMP2_OFF": "Bơm chống ngập tắt",
-    "ROOF_COVER": "Mái nhận lệnh che mưa 180°", "ROOF_RETRACT": "Mái nhận lệnh thu gọn 0°",
+    "ROOF_COVER": "Mái nhận lệnh che mưa 90°", "ROOF_RETRACT": "Mái nhận lệnh thu gọn 180°",
     "ROOF_REACHED": "Đã gửi đủ lệnh góc mái mục tiêu",
     "ROOF_AUTO": "Mái che chuyển AUTO", "ROOF_MANUAL": "Mái che chuyển MANUAL",
     "FLOOD_AUTO": "Chống ngập chuyển AUTO", "FLOOD_MANUAL": "Chống ngập chuyển MANUAL",

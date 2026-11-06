@@ -31,8 +31,8 @@ _demo = {
     'unoConnected': True, 'doorOpen': False, 'distance': 16.0,
     'floodRaw': 0, 'temperature': 29.5, 'humidity': 70.0,
     'soil': 510, 'light': 290, 'rain': 1020, 'vibration': 0,
-    'waterPump': 0, 'waterMode': 1, 'floodPump': False,
-    'roofAngle': 0, 'roofTargetAngle': 0, 'roofAutoMode': True, 'floodAutoMode': True,
+    'waterPump': 0, 'waterMode': 0, 'floodPump': False,
+    'roofAngle': 180, 'roofTargetAngle': 180, 'roofAutoMode': False, 'floodAutoMode': False,
     '_flood_manual_ready': True, '_flood_pump_until': 0.0,
     '_flood_alarm': False, '_auto_armed': False,
 }
@@ -62,7 +62,7 @@ def normalize(raw, demo):
     soil = num(raw.get('soil')) if uno else None
     rain = num(raw.get('rain')) if uno else None
     distance = num(raw.get('distance'))
-    mode = raw.get('waterMode', 1)
+    mode = raw.get('waterMode', 0)
     rain_wet = rain is not None and rain < 900
     has_new_uart = boolean(raw.get('roofAngleReported')) if not demo else True
     has_manual_modes = demo or boolean(raw.get('manualModesReported'))
@@ -73,7 +73,7 @@ def normalize(raw, demo):
     roof_angle = num(raw.get('roofAngle')) if has_new_uart else None
     roof_target = num(raw.get('roofTargetAngle')) if has_new_uart else None
     roof_state = (str(raw.get('roofState')) if not demo else
-                  ('MOVING' if roof_angle != roof_target else ('COVERED' if roof_target == 180 else 'RETRACTED'))) if has_new_uart else 'UNKNOWN'
+                  ('MOVING' if roof_angle != roof_target else ('COVERED' if roof_target == 90 else 'RETRACTED'))) if has_new_uart else 'UNKNOWN'
     if roof_state not in ('MOVING','COVERED','RETRACTED','UNKNOWN'): roof_state = 'UNKNOWN'
     return {
         'temperature': num(raw.get('temperature')) if uno else None,
@@ -249,7 +249,7 @@ async def command(body: CommandRequest):
             elif c in ('roof/open', 'roof/close'):
                 if _demo['roofAutoMode']:
                     raise HTTPException(status_code=409, detail='Chuyen mai che sang MANUAL truoc')
-                _demo['roofTargetAngle'] = 180 if c.endswith('open') else 0
+                _demo['roofTargetAngle'] = 90 if c.endswith('open') else 180
             elif c == 'flood/auto':
                 _demo['floodAutoMode'] = True
                 _demo['floodPump'] = False
@@ -327,7 +327,7 @@ async def demo_tick_task():
                 roof_target = _demo['roofTargetAngle']
                 if _demo['roofAutoMode']:
                     # Demo confirms rain quickly; real firmware debounces the sensor.
-                    roof_target = 180 if _demo['rain'] < 900 else 0
+                    roof_target = 90 if _demo['rain'] < 900 else 180
                     _demo['roofTargetAngle'] = roof_target
                 if _demo['roofAngle'] < roof_target:
                     _demo['roofAngle'] = min(roof_target, _demo['roofAngle'] + 5)
